@@ -1,0 +1,61 @@
+/* PARTE 8B · Base y estructura general (barra lateral, cabecera, contenido). */
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--fondo); color: var(--texto); font: 14px/1.5 var(--fuente); }
+h1, h2, h3, p { margin: 0; }
+h1 { font-size: 22px; font-weight: 600; letter-spacing: -.01em; }
+h2 { font-size: 15px; font-weight: 600; }
+a { color: inherit; text-decoration: none; }
+button, input, select, textarea { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--azul); outline-offset: 2px; }
+
+.app { display: grid; grid-template-columns: var(--lateral) minmax(0, 1fr); min-height: 100vh; }
+.principal { min-width: 0; display: flex; flex-direction: column; }
+
+.lateral { background: var(--marca-osc); color: #f4ece9; display: flex; flex-direction: column; padding: 18px 12px; position: sticky; top: 0; height: 100vh; }
+.marca { display: flex; flex-direction: column; padding: 4px 10px 18px; line-height: 1.1; }
+.marca-a { font: italic 400 19px Georgia, "Times New Roman", serif; opacity: .9; }
+.marca-b { font: italic 600 27px Georgia, "Times New Roman", serif; }
+.marca-c { margin-top: 8px; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; opacity: .6; }
+.lateral nav { display: flex; flex-direction: column; gap: 2px; overflow: auto; flex: 1; }
+.nav-item { display: flex; align-items: center; gap: 10px; padding: 9px 10px; border-radius: var(--radio-s); color: #e8dcd8; }
+.nav-item:hover { background: rgba(255, 255, 255, .08); }
+.nav-item.activo { background: rgba(255, 255, 255, .16); color: #fff; font-weight: 600; }
+.insignia { margin-left: auto; background: #e8b04a; color: #3b2600; font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 999px; }
+.insignia.violeta { background: #c3b1f5; color: #2b1d57; }
+.usuario { border-top: 1px solid rgba(255, 255, 255, .14); padding: 12px 10px 4px; display: flex; flex-direction: column; gap: 2px; }
+.usuario-n { font-weight: 600; }
+.usuario-r { font-size: 12px; opacity: .7; margin-bottom: 8px; }
+.lateral .boton { background: rgba(255, 255, 255, .1); border-color: transparent; color: #fff; }
+.lateral .boton:hover { background: rgba(255, 255, 255, .2); }
+
+.barra-sup { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 28px; background: var(--tarjeta); border-bottom: 1px solid var(--borde); position: sticky; top: 0; z-index: 5; }
+.barra-sup-t { font-weight: 600; font-size: 15px; }
+.barra-sup-d { display: flex; align-items: center; gap: 10px; }
+.sync { color: var(--texto-3); font-size: 12px; }
+.contenido { padding: 24px 28px 60px; max-width: 1320px; width: 100%; }
+
+.pagina-cab { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; flex-wrap: wrap; margin-bottom: 18px; }
+.pagina-desc { color: var(--texto-2); max-width: 760px; margin-top: 4px; }
+
+.pantalla-carga { padding: 60px 20px; display: flex; flex-direction: column; align-items: center; gap: 14px; }
+
+.login { min-height: 100vh; display: grid; place-items: center; padding: 20px; background: linear-gradient(160deg, var(--marca-osc), #6e2f2c); }
+.login-caja { background: var(--tarjeta); border-radius: 16px; padding: 32px 30px; width: 100%; max-width: 380px; display: flex; flex-direction: column; gap: 14px; box-shadow: 0 20px 50px rgba(0, 0, 0, .35); }
+.login-marca { display: flex; flex-direction: column; line-height: 1.1; color: var(--marca); }
+.login-marca .marca-a { font-size: 16px; } .login-marca .marca-b { font-size: 26px; }
+.login-campo { display: flex; align-items: center; gap: 10px; border: 1px solid var(--borde-fuerte); border-radius: var(--radio-s); padding: 0 12px; background: var(--fondo); }
+.login-campo .pin { border: 0; background: transparent; padding: 11px 0; width: 100%; font-size: 18px; letter-spacing: .3em; outline: none; }
+
+@media (max-width: 900px) {
+  .app { grid-template-columns: minmax(0, 1fr); }
+  .barra-sup { flex-wrap: wrap; }
+  .barra-sup-d { flex-wrap: wrap; }
+  .lateral { position: static; height: auto; flex-direction: row; flex-wrap: wrap; align-items: center; padding: 10px 12px; gap: 8px; }
+  .marca { padding: 0 8px 0 0; } .marca-c { display: none; }
+  .lateral nav { flex-direction: row; overflow-x: auto; flex: 1 1 100%; order: 3; }
+  .nav-item { white-space: nowrap; }
+  .usuario { border: 0; padding: 0; flex-direction: row; align-items: center; gap: 8px; margin-left: auto; }
+  .usuario-r { display: none; }
+  .barra-sup, .contenido { padding-left: 16px; padding-right: 16px; }
+}

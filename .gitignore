@@ -1,0 +1,27 @@
+# Nunca se suben credenciales, documentos ni datos del campo.
+client_secret.json
+token.json
+credentials.json
+*.pem
+*.key
+.env
+.env.*
+config.local.js
+
+# Impresión de folios (se queda en el computador de la oficina)
+pdfs/
+*.pdf
+imprimir_folios.py
+
+# Datos con nombres y RUT de trabajadores (versión anterior)
+datos_semanales.js
+historial_pagado.js
+*.xlsx
+*.xls
+
+# Archivos de trabajo
+.claude/
+*.zip
+*.log
+Thumbs.db
+.DS_Store

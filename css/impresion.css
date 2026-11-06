@@ -1,0 +1,21 @@
+/* PARTE 8D · Impresión: informes y hoja en blanco para la jefa de campo. */
+.hoja-impresa { display: none; }
+
+@media print {
+  body { background: #fff; color: #000; font-size: 11px; }
+  .lateral, .barra-sup, .barra, .acciones, #toasts, .boton, .pagina-cab .acciones, .pestanas, .barra-fija, .modal-fondo { display: none !important; }
+  .app { display: block; }
+  .contenido { padding: 0; max-width: none; }
+  .tarjeta, .kpi { box-shadow: none; border-color: #999; break-inside: avoid; }
+  .tabla-caja { max-height: none !important; overflow: visible; border-color: #999; }
+  .tabla th { position: static; background: #eee; color: #000; }
+  .chip { border: 1px solid #999; background: #fff; color: #000; }
+
+  body.imprimir-hoja .contenido > * { display: none !important; }
+  body.imprimir-hoja .contenido > .hoja-impresa { display: block !important; }
+  .hoja-impresa h1 { font-size: 18px; margin-bottom: 4px; }
+  .hoja-impresa p { margin: 0 0 10px; }
+  .hoja-impresa .tabla td { padding: 9px 8px; }
+  .hoja-impresa td.casilla { width: 120px; border: 1px solid #000; }
+  .hoja-impresa .firma { margin-top: 28px; }
+}
