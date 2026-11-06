@@ -5,6 +5,7 @@ import { dinero, numero, fecha, unicos, titulo, oracion, hace } from '../core/do
 import { CONFIG } from '../config.js';
 import { claveLiberacion, estadoParaLiberar, monto } from '../core/reglas.js';
 import { PP } from '../data/pp.js';
+import { foliosGrupo } from '../data/lectura.js';
 import { S, puede, operar, render, marcarPresencia, quienEsta } from '../estado.js';
 import { aviso, boton, tarjeta, tabla, celda, campo, seleccion, toast, confirmar, etapa, pildora } from '../ui/componentes.js';
 import { detalleGrupo, irAAsignarPlantas } from './_comun.js';
@@ -72,13 +73,34 @@ export function porLiberar() {
       celda(dinero(g.monto), { num: true, clase: 'sin-corte' }),
       celda(etapa(g.confirmadas ? 1 : 0, g.jornada), { clase: 'sin-corte' })
     ]));
-    if (u.detalle === k) filas.push(h('tr', { class: 'fila-detalle' }, [h('td', { colspan: 6 }, [detalleGrupo(g), historialGrupo(g)])]));
+    if (u.detalle === k) filas.push(h('tr', { class: 'fila-detalle' }, [h('td', { colspan: 6 }, [detalleGrupo(g), foliosPanel(g), historialGrupo(g)])]));
   }
   raiz.appendChild(tabla([{ t: '' }, { t: 'Cuartel y labor' }, { t: 'Contratista' }, { t: 'Plantas / jornadas', num: true }, { t: 'Monto', num: true }, { t: 'Etapa' }], filas, { vacio: 'No hay grupos con este filtro.', alto: 620 }));
   raiz.appendChild(h('p', { class: 'nota', style: 'margin-top:8px', text: 'Escribe las plantas directamente en la fila: se guardan al salir del campo. Monto = plantas × precio × 1,5. Pasa el mouse por la señal de color para ver el motivo.' }));
 
   if (admin) raiz.appendChild(barraFija(ev));
   return raiz;
+}
+
+// Folios de Labores ligados al grupo. Se cargan al abrir la fila y quedan en memoria.
+const cacheFolios = new Map();
+function foliosPanel(g) {
+  const caja = h('div', { class: 'detalle', style: 'margin-top:10px' }, [h('p', { class: 'detalle-t', text: 'Folios ligados' }), h('p', { class: 'detalle-f', text: 'Cargando folios…' })]);
+  const clave = claveLiberacion(g);
+  const pintar = (lista) => {
+    caja.replaceChildren(h('p', { class: 'detalle-t', text: `Folios ligados (${lista.length})` }));
+    if (!lista.length) { caja.appendChild(h('p', { class: 'detalle-f', text: 'No se encontraron folios para este grupo.' })); return; }
+    caja.appendChild(h('div', { class: 'barra', style: 'margin:4px 0' }, lista.map((f) =>
+      pildora(String(f.folio), 'azul', `Folio ${f.folio} · ${fecha(f.fecha)} · ${f.personas} personas · ${f.filas} filas${f.plantas != null ? ' · ' + numero(f.plantas) + ' plantas en Labores' : ''}`))));
+    caja.appendChild(h('div', { class: 'detalle-f', text: lista.map((f) => `Folio ${f.folio} · ${fecha(f.fecha)} · ${f.personas} personas${f.plantas != null ? ' · ' + numero(f.plantas) + ' plantas' : ''}`).join('  |  ') }));
+    const suma = lista.reduce((s, f) => s + (f.plantas || 0), 0);
+    if (!g.jornada && lista.every((f) => f.plantas != null) && Math.round(suma) !== Math.round(g.plantas)) {
+      caja.appendChild(aviso('warn', `Las plantas de los folios suman ${numero(suma)} y en este grupo hay ${numero(g.plantas)}${g.confirmadas ? ' (asignadas a mano)' : ''}.`));
+    }
+  };
+  if (cacheFolios.has(clave)) pintar(cacheFolios.get(clave));
+  else foliosGrupo(g).then((l) => { cacheFolios.set(clave, l); pintar(l); }).catch((e) => { caja.replaceChildren(h('p', { class: 'detalle-t', text: 'Folios ligados' }), aviso('err', e.message)); });
+  return caja;
 }
 
 // Historial del grupo: lo que se ha hecho sobre este cuartel y labor.
