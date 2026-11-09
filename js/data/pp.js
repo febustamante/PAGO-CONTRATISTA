@@ -6,7 +6,11 @@ import { rpc } from './api.js';
 import * as demo from './ppDemo.js';
 
 const real = {
-  login: (pin) => rpc('pp_login', { p_pin: pin }),
+  login: (usuario, clave) => rpc('pp_login', { p_usuario: usuario, p_clave: clave }),
+  salir: (token) => rpc('pp_salir', { p_token: token }),
+  cambiarClave: (token, actual, nueva) => rpc('pp_cambiar_clave', { p_token: token, p_actual: actual, p_nueva: nueva }),
+  usuariosListar: (token) => rpc('pp_usuarios_listar', { p_token: token }),
+  usuarioGuardar: (token, usuario, nombre, rol, clave, activo) => rpc('pp_usuario_guardar', { p_token: token, p_usuario: usuario, p_nombre: nombre, p_rol: rol, p_clave: clave || null, p_activo: activo }),
   estado: (pin) => rpc('pp_estado', { p_pin: pin }),
   proponer: (pin, items) => rpc('pp_proponer_plantas', { p_pin: pin, p_items: items }),
   aprobar: (pin, items) => rpc('pp_aprobar_plantas', { p_pin: pin, p_items: items }),

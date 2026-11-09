@@ -53,22 +53,33 @@ export function sesionGuardada() {
   try { return JSON.parse(sessionStorage.getItem('pp_sesion')); } catch (e) { return null; }
 }
 
-export async function entrar(pin) {
-  const r = await PP.login(pin);
+// El "pin" de la sesión es el código que entrega el servidor al ingresar con usuario y clave.
+export async function entrar(usuario, clave) {
+  const r = await PP.login(usuario, clave);
   if (!r.ok) return r;
-  S.sesion = { pin, nombre: r.nombre, rol: r.rol };
+  S.sesion = { pin: r.token, nombre: r.nombre, rol: r.rol, debe_cambiar: !!r.debe_cambiar };
   guardarSesion();
+  if (S.sesion.debe_cambiar) { render(); return { ok: true }; }
   await cargarTodo();
   return { ok: true };
 }
 
+// Después de cambiar la clave inicial se cargan los datos.
+export async function claveCambiada() {
+  S.sesion.debe_cambiar = false;
+  guardarSesion();
+  await cargarTodo();
+}
+
 export function salir() {
+  if (S.sesion && S.sesion.pin) { try { PP.salir(S.sesion.pin); } catch (e) { /* la sesión vence sola */ } }
   S.sesion = null; S.base = null; S.pp = null; S.d = null; S.ui = {};
   try { sessionStorage.removeItem('pp_sesion'); } catch (e) { /* nada */ }
   render();
 }
 
 export async function cargarTodo() {
+  if (S.sesion && S.sesion.debe_cambiar) { render(); return; }
   S.cargando = true; S.error = null; render();
   try {
     const [base, pp] = await Promise.all([cargarBase(), PP.estado(S.sesion.pin)]);

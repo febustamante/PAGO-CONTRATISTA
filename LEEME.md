@@ -7,7 +7,7 @@ Varias personas pueden usarla a la vez: lo que una hace lo ven las otras (se sin
 - **En un computador de la oficina:** doble clic en `Iniciar servidor.bat` y abrir `http://localhost:8080`.
   Otras personas de la misma red entran con `http://IP-DE-ESE-COMPUTADOR:8080`.
 - **En internet:** subir esta carpeta tal cual a cualquier hosting de archivos estáticos (Netlify, Cloudflare Pages, GitHub Pages o el servidor de la empresa). No necesita compilar nada.
-- **Probar sin escribir nada:** agregar `?demo=1` al final de la dirección. PIN 1111 administrador, 2222 jefa de campo, 3333 solo lectura. Lee los datos reales, pero lo que se hace queda solo en memoria.
+- **Probar sin escribir nada:** agregar `?demo=1` al final de la dirección. Usuarios `admin`, `jefa` o `lectura`, todos con la clave `demo`. Lee los datos reales, pero lo que se hace queda solo en memoria.
 
 No se abre con doble clic en `index.html` (los navegadores bloquean los módulos de archivos locales).
 
@@ -34,13 +34,18 @@ Atajos: `/` busca en Por liberar; `Alt+1…9` cambia de pantalla.
 4. **Último paso:** una sola **fecha de pago** para todo lo liberado. Pasa a **Con fecha de pago**. Con fecha de pago no se puede deshacer sin quitar antes la fecha.
 
 ## Quién puede hacer qué
-El ingreso es con el mismo PIN de las otras apps (`usuarios_sj`). El rol sale de `rol_labores`:
-| Rol | Quién | Puede |
-|---|---|---|
-| Administrador | `admin` | todo |
-| Jefa de campo | `supervisor` con campo "El Cerrillo" | solo **Asignar plantas** (por cuartel y contratista), con los casos en rojo (ya pagado antes) a la vista para ir revisando |
-| Solo lectura | `gerencia` y otros supervisores | ver Inicio, Pagos, Asistencia, Alertas, Otros campos, Contratos, Informe e Historial |
-Sin `rol_labores` no hay acceso. Cada acción queda en el Historial con el nombre de quien la hizo.
+La plataforma tiene **sus propios usuarios y claves**, separados de Labores y de las otras aplicaciones. El administrador los crea y administra en la pantalla **Usuarios**.
+| Perfil | Puede |
+|---|---|
+| Administrador | todo, incluida la pantalla Usuarios |
+| Jefa de campo | solo **Asignar plantas** (por cuartel y contratista), con los casos en rojo (ya pagado antes) a la vista para ir revisando |
+| Solo lectura | ver Inicio, Pagos, Asistencia, Alertas, Otros campos, Contratos, Informe e Historial |
+
+- Las claves se guardan **cifradas**. Al crear un usuario o reiniciar su clave, la plataforma genera una **clave temporal** y la muestra una sola vez; la persona la cambia obligatoriamente en su primer ingreso (8 caracteres o más).
+- Cada persona puede cambiar su clave desde **Mi clave**. La sesión dura 12 horas.
+- Después de 8 intentos fallidos de un usuario en 10 minutos, el ingreso se bloquea por un rato.
+- Siempre debe quedar al menos un administrador activo.
+- Cada acción queda en el Historial con el nombre de quien la hizo.
 
 ## Trabajo en equipo
 - **Quién está aquí:** si otra persona está mirando o editando el mismo cuartel y labor, aparece "Nombre está aquí".
@@ -76,21 +81,22 @@ js/core/dom.js        2A utilidades de pantalla, formatos, nombres y Excel
 js/core/reglas.js     2B reglas del negocio (funciones puras)
 js/data/api.js        3A conexión con Supabase
 js/data/lectura.js    3B lectura de datos existentes
-js/data/pp.js         3C operaciones compartidas (con el PIN)
+js/data/pp.js         3C operaciones compartidas (con el código de sesión)
 js/data/ppDemo.js     3D copia en memoria para el modo demo
 js/ui/                4  iconos y componentes (modal, avisos, etapa, esqueletos)
 js/estado.js          5  sesión, datos, presencia y sincronización
 js/vistas/            6  una pantalla por archivo
 js/main.js            7  rutas, atajos y estructura general
-sql/                  01 tablas · 02 funciones · 03 fecha de pago · 04 presencia · 05 impresión (ya aplicadas)
+sql/                  01 tablas · 02 funciones · 03 fecha de pago · 04 presencia · 05 impresión · 06 usuarios propios (ya aplicadas)
 ```
 
 ## Seguridad
-- Las tablas `pp_*` no se pueden leer ni escribir directamente con la clave pública (se comprobó: acceso denegado). Todo pasa por funciones que validan el PIN en el servidor. 20 PIN malos en 5 minutos bloquean el ingreso por un rato.
-- **Límite importante:** la tabla `usuarios_sj` de las otras apps es legible con la clave pública, incluidos los PIN. Mientras eso siga así, quien la lea puede ingresar a esta plataforma con el PIN de otra persona. Cerrar esa tabla exige cambiar las otras apps; conviene hacerlo.
+- Las tablas `pp_*` no se pueden leer ni escribir directamente con la clave pública (se comprobó: acceso denegado). Todo pasa por funciones que validan la sesión en el servidor.
+- Las claves de esta plataforma están cifradas y **no dependen de la tabla `usuarios_sj`** de las otras aplicaciones: aunque esa tabla sea legible, no sirve para ingresar aquí.
+- Con el repositorio público, el código y la clave pública de Supabase son visibles; lo que protege los datos es que las tablas `pp_*` están cerradas y todo pasa por funciones con sesión.
 - `petroleo_movs` y `reglas_operacion` siguen sin RLS (otras apps).
 
 ## Pendiente de verificar
-- Las funciones de escritura se probaron en el modo demo y, contra Supabase, solo con PIN inválido. Falta probarlas con un PIN real (proponer, aprobar, liberar, fecha de pago, presencia).
+- Ingreso, cambio obligatorio de clave y permisos por perfil se probaron contra Supabase real. Las funciones de escritura (proponer, aprobar, liberar, fecha de pago, presencia, impresión) se probaron en el modo demo y, contra Supabase, falta probarlas con el usuario administrador.
 - Avisos por correo o WhatsApp (hoy el aviso es dentro de la aplicación).
 - Vigencia de contratos, facturas con IVA y colaciones, y marcar la factura en `pagos_facturados`.

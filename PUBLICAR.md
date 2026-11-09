@@ -27,13 +27,13 @@ La plataforma son solo archivos: no se compila nada. Se guarda en GitHub (privad
 Ambos entregan una dirección con https. El archivo `_headers` evita que los buscadores la indexen y que el navegador use versiones viejas.
 
 ## 3. Probar
-1. Abre la dirección + `?demo=1` (PIN 1111): debe cargar los datos y funcionar sin escribir nada.
-2. Abre la dirección normal y entra con tu PIN real. Prueba, con algo de bajo riesgo: asignar plantas, liberar un grupo, ponerle fecha de pago y deshacerlo.
+1. Abre la dirección + `?demo=1` (usuario `admin`, clave `demo`): debe cargar los datos y funcionar sin escribir nada.
+2. Abre la dirección normal y entra con tu usuario y tu clave de la plataforma. Prueba, con algo de bajo riesgo: asignar plantas, liberar un grupo, ponerle fecha de pago y deshacerlo.
 
 ## 4. Actualizar
 Cada vez que cambie algo, sube los archivos nuevos al repositorio y el hosting se actualiza solo en uno o dos minutos.
 
 ## 5. Seguridad (importante)
-- Mientras la tabla `usuarios_sj` siga siendo legible con la clave pública, quien la lea puede ver los PIN. Recomendado: darle a la plataforma una clave propia, cifrada.
+- La plataforma tiene usuarios y claves propios, cifrados y separados de Labores. Crea los usuarios en la pantalla Usuarios.
 - No compartas la dirección fuera del equipo.
 - Nunca subas `client_secret.json`, `token.json`, tokens de Kizeo ni la clave de servicio de Supabase.

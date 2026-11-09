@@ -17,6 +17,8 @@ import { vistaContratos } from './vistas/contratos.js';
 import { vistaInforme } from './vistas/informe.js';
 import { vistaHistorial } from './vistas/historial.js';
 import { vistaImpresion } from './vistas/impresion.js';
+import { vistaUsuarios } from './vistas/usuarios.js';
+import { vistaClave } from './vistas/clave.js';
 
 const TODOS = ['admin', 'jefa_campo', 'lectura'];
 const NAV = [
@@ -29,7 +31,9 @@ const NAV = [
   { id: 'contratos', t: 'Contratos', i: 'contrato', roles: ['admin', 'lectura'], v: vistaContratos },
   { id: 'informe', t: 'Informe', i: 'hoja', roles: ['admin', 'lectura'], v: vistaInforme },
   { id: 'impresion', t: 'Impresión', i: 'imprimir', roles: ['admin'], v: vistaImpresion },
-  { id: 'historial', t: 'Historial', i: 'reloj', roles: ['admin', 'lectura'], v: vistaHistorial }
+  { id: 'usuarios', t: 'Usuarios', i: 'personas', roles: ['admin'], v: vistaUsuarios },
+  { id: 'historial', t: 'Historial', i: 'reloj', roles: ['admin', 'lectura'], v: vistaHistorial },
+  { id: 'clave', t: 'Mi clave', i: 'candado', roles: TODOS, oculto: true, v: () => vistaClave() }
 ];
 
 // Nombres cortos y rutas antiguas: llevan a la pantalla nueva con la pestaña correcta.
@@ -44,11 +48,12 @@ export function ir(destino) {
 }
 
 const permitidas = () => NAV.filter((n) => n.roles.includes(S.sesion.rol));
+const menu = () => permitidas().filter((n) => !n.oculto);
 
 function vistaActual() {
   let id = location.hash.replace('#/', '') || 'inicio';
   if (ALIAS[id]) { ALIAS[id][1](); id = ALIAS[id][0]; history.replaceState(null, '', '#/' + id); }
-  return permitidas().find((n) => n.id === id) || permitidas()[0];
+  return permitidas().find((n) => n.id === id) || menu()[0];
 }
 
 function insignia(id) {
@@ -62,11 +67,12 @@ function insignia(id) {
 function lateral(actual) {
   return h('aside', { class: 'lateral' }, [
     h('div', { class: 'marca' }, [h('span', { class: 'marca-a', text: 'Agrícola' }), h('span', { class: 'marca-b', text: 'San José' }), h('span', { class: 'marca-c', text: 'Pagos a contratistas' })]),
-    h('nav', { 'aria-label': 'Secciones' }, permitidas().map((n, i) =>
+    h('nav', { 'aria-label': 'Secciones' }, menu().map((n, i) =>
       h('a', { class: 'nav-item' + (n.id === actual.id ? ' activo' : ''), href: '#/' + n.id, title: `${n.t} (Alt+${i + 1})`, 'aria-current': n.id === actual.id ? 'page' : false }, [icono(n.i), h('span', { text: n.t }), insignia(n.id)]))),
     h('div', { class: 'usuario' }, [
       h('div', { class: 'usuario-n', text: titulo(S.sesion.nombre) }),
       h('div', { class: 'usuario-r', text: ROLES[S.sesion.rol] || S.sesion.rol }),
+      boton('Mi clave', { icon: 'candado', onclick: () => { location.hash = '#/clave'; } }),
       boton('Salir', { icon: 'salir', onclick: salir })
     ])
   ]);
@@ -88,6 +94,7 @@ alPintar(() => {
   const y = window.scrollY;
   raiz.replaceChildren();
   if (!S.sesion) { raiz.appendChild(vistaLogin()); return; }
+  if (S.sesion.debe_cambiar) { raiz.appendChild(vistaClave({ obligatorio: true })); return; }
   if (!S.base || !S.pp || !S.d) {
     raiz.appendChild(h('div', { class: 'pantalla-carga' }, [S.error ? aviso('err', S.error) : esqueleto(7), S.error ? boton('Reintentar', { onclick: () => cargarTodo() }) : null]));
     return;
@@ -107,7 +114,7 @@ document.addEventListener('keydown', (e) => {
   if (!S.sesion) return;
   const escribiendo = ['INPUT', 'TEXTAREA', 'SELECT'].includes((e.target.tagName || ''));
   if (e.key === '/' && !escribiendo) { const b = document.getElementById('buscar'); if (b) { e.preventDefault(); b.focus(); } }
-  if (e.altKey && /^[1-9]$/.test(e.key)) { const n = permitidas()[Number(e.key) - 1]; if (n) { e.preventDefault(); location.hash = '#/' + n.id; } }
+  if (e.altKey && /^[1-9]$/.test(e.key)) { const n = menu()[Number(e.key) - 1]; if (n) { e.preventDefault(); location.hash = '#/' + n.id; } }
 });
 
 window.addEventListener('hashchange', () => { if (S.sesion) render(); });

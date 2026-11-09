@@ -35,7 +35,37 @@ export const impresionMarcar = (pin, hasta, cantidad, reintentar, nota) => {
   return pausa({ ok: true, ultimo_folio: hasta });
 };
 
-export const login = (pin) => pausa(quien(pin) ? { ok: true, ...quien(pin) } : err('PIN no válido o sin acceso a esta plataforma.'));
+// Usuarios de demostración: usuario admin, jefa o lectura, con la clave "demo". El código de sesión es el PIN interno.
+const DEMO_LOGIN = { admin: '1111', jefa: '2222', lectura: '3333' };
+D.usuarios = [
+  { id: 1, usuario: 'admin', nombre: 'Administrador (demo)', rol: 'admin', activo: true, debe_cambiar: false, ultimo_ingreso: null },
+  { id: 2, usuario: 'jefa', nombre: 'Jefa de campo (demo)', rol: 'jefa_campo', activo: true, debe_cambiar: false, ultimo_ingreso: null },
+  { id: 3, usuario: 'lectura', nombre: 'Gerencia (demo)', rol: 'lectura', activo: true, debe_cambiar: false, ultimo_ingreso: null }
+];
+export const login = (usuario, clave) => {
+  const pin = DEMO_LOGIN[(usuario || '').trim().toLowerCase()];
+  if (!pin || clave !== 'demo') return pausa(err('Usuario o clave incorrectos.'));
+  return pausa({ ok: true, token: pin, nombre: quien(pin).nombre, rol: quien(pin).rol, debe_cambiar: false });
+};
+export const salir = () => pausa({ ok: true });
+export const cambiarClave = (token, actual, nueva) => pausa((nueva || '').length < 8 ? err('La clave nueva debe tener al menos 8 caracteres.') : { ok: true });
+export const usuariosListar = (token) => {
+  const u = quien(token);
+  if (!u || u.rol !== 'admin') return pausa(err('Solo el administrador administra usuarios.'));
+  return pausa({ ok: true, usuarios: D.usuarios });
+};
+export const usuarioGuardar = (token, usuario, nombre, rol, clave, activo) => {
+  const u = quien(token);
+  if (!u || u.rol !== 'admin') return pausa(err('Solo el administrador administra usuarios.'));
+  const id = (usuario || '').trim().toLowerCase();
+  if (!/^[a-z0-9._-]{3,40}$/.test(id)) return pausa(err('El usuario debe tener de 3 a 40 letras minúsculas, números, punto, guion o guion bajo.'));
+  const i = D.usuarios.findIndex((x) => x.usuario === id);
+  if (i < 0 && (clave || '').length < 8) return pausa(err('La clave temporal debe tener al menos 8 caracteres.'));
+  const fila = { id: i >= 0 ? D.usuarios[i].id : D.usuarios.length + 1, usuario: id, nombre, rol, activo: activo !== false, debe_cambiar: i < 0 || !!clave, ultimo_ingreso: null };
+  if (i >= 0) D.usuarios[i] = fila; else D.usuarios.push(fila);
+  mov(u, 'usuario', `${i >= 0 ? 'actualizó' : 'creó'} al usuario ${id} (${rol})`);
+  return pausa({ ok: true, creado: i < 0 });
+};
 
 export const estado = (pin) => {
   const u = quien(pin);
