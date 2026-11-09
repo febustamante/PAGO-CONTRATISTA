@@ -24,19 +24,19 @@ import { vistaLiquidacion } from './vistas/liquidacion.js';
 
 const TODOS = ['admin', 'jefa_campo', 'lectura'];
 const NAV = [
-  { id: 'inicio', t: 'Inicio', i: 'inicio', roles: ['admin', 'lectura'], v: () => vistaTablero(ir) },
-  { id: 'pagos', t: 'Pagos', i: 'dinero', roles: ['admin', 'lectura'], v: vistaPagos },
-  { id: 'plantas', t: 'Asignar plantas', i: 'reparto', roles: ['admin', 'jefa_campo'], v: vistaPlantas },
-  { id: 'asistencia', t: 'Asistencia', i: 'personas', roles: ['admin', 'lectura'], v: vistaAsistencia },
-  { id: 'alertas', t: 'Alertas', i: 'alerta', roles: ['admin', 'lectura'], v: vistaAlertas },
-  { id: 'otros', t: 'Otros campos', i: 'mapa', roles: ['admin', 'lectura'], v: vistaOtros },
-  { id: 'contratos', t: 'Contratos', i: 'contrato', roles: ['admin', 'lectura'], v: vistaContratos },
-  { id: 'informe', t: 'Informe', i: 'hoja', roles: ['admin', 'lectura'], v: vistaInforme },
-  { id: 'impresion', t: 'Impresión', i: 'imprimir', roles: ['admin'], v: vistaImpresion },
-  { id: 'ajustes', t: 'Ajustes', i: 'contrato', roles: ['admin'], v: vistaAjustes },
+  { id: 'inicio', g: 'Operación', t: 'Inicio', i: 'inicio', roles: ['admin', 'lectura'], v: () => vistaTablero(ir) },
+  { id: 'pagos', g: 'Operación', t: 'Pagos', i: 'dinero', roles: ['admin', 'lectura'], v: vistaPagos },
+  { id: 'plantas', g: 'Operación', t: 'Asignar plantas', i: 'reparto', roles: ['admin', 'jefa_campo'], v: vistaPlantas },
+  { id: 'otros', g: 'Operación', t: 'Otros campos', i: 'mapa', roles: ['admin', 'lectura'], v: vistaOtros },
+  { id: 'impresion', g: 'Operación', t: 'Impresión', i: 'imprimir', roles: ['admin'], v: vistaImpresion },
+  { id: 'asistencia', g: 'Control', t: 'Asistencia', i: 'personas', roles: ['admin', 'lectura'], v: vistaAsistencia },
+  { id: 'alertas', g: 'Control', t: 'Alertas', i: 'alerta', roles: ['admin', 'lectura'], v: vistaAlertas },
+  { id: 'contratos', g: 'Control', t: 'Contratos', i: 'contrato', roles: ['admin', 'lectura'], v: vistaContratos },
+  { id: 'informe', g: 'Control', t: 'Informe', i: 'hoja', roles: ['admin', 'lectura'], v: vistaInforme },
+  { id: 'ajustes', g: 'Administración', t: 'Ajustes', i: 'contrato', roles: ['admin'], v: vistaAjustes },
   { id: 'liquidacion', t: 'Detalle a facturar', i: 'hoja', roles: ['admin', 'lectura'], oculto: true, v: vistaLiquidacion },
-  { id: 'usuarios', t: 'Usuarios', i: 'personas', roles: ['admin'], v: vistaUsuarios },
-  { id: 'historial', t: 'Historial', i: 'reloj', roles: ['admin', 'lectura'], v: vistaHistorial },
+  { id: 'usuarios', g: 'Administración', t: 'Usuarios', i: 'personas', roles: ['admin'], v: vistaUsuarios },
+  { id: 'historial', g: 'Administración', t: 'Historial', i: 'reloj', roles: ['admin', 'lectura'], v: vistaHistorial },
   { id: 'clave', t: 'Mi clave', i: 'candado', roles: TODOS, oculto: true, v: () => vistaClave() }
 ];
 
@@ -62,7 +62,7 @@ function vistaActual() {
 
 function insignia(id) {
   if (!S.d) return null;
-  if (id === 'alertas') { const n = S.d.res.revisar + S.d.res.azules; return n ? h('span', { class: 'insignia', text: n }) : null; }
+  if (id === 'alertas') { const n = S.d.res.revisar + S.d.res.azules; return n ? h('span', { class: 'insignia rojo', text: n }) : null; }
   if (id === 'plantas' && S.sesion.rol === 'admin') return S.d.res.propuestas ? h('span', { class: 'insignia violeta', title: 'Propuestas por aprobar', text: S.d.res.propuestas }) : null;
   if (id === 'pagos' && S.pp) { const n = S.pp.liberaciones.filter((l) => !l.fecha_pago).length; return n ? h('span', { class: 'insignia', title: 'Liberados sin fecha de pago', text: n }) : null; }
   return null;
@@ -70,9 +70,11 @@ function insignia(id) {
 
 function lateral(actual) {
   return h('aside', { class: 'lateral' }, [
-    h('div', { class: 'marca' }, [h('span', { class: 'marca-a', text: 'Agrícola' }), h('span', { class: 'marca-b', text: 'San José' }), h('span', { class: 'marca-c', text: 'Pagos a contratistas' })]),
-    h('nav', { 'aria-label': 'Secciones' }, menu().map((n, i) =>
-      h('a', { class: 'nav-item' + (n.id === actual.id ? ' activo' : ''), href: '#/' + n.id, title: `${n.t} (Alt+${i + 1})`, 'aria-current': n.id === actual.id ? 'page' : false }, [icono(n.i), h('span', { text: n.t }), insignia(n.id)]))),
+    h('div', { class: 'marca' }, [h('span', { class: 'marca-a', text: 'Agrícola San José' }), h('span', { class: 'marca-c', text: 'Pagos a contratistas' })]),
+    h('nav', { 'aria-label': 'Secciones' }, menu().flatMap((n, i, arr) => [
+      i === 0 || arr[i - 1].g !== n.g ? h('div', { class: 'nav-grupo', text: n.g }) : null,
+      h('a', { class: 'nav-item' + (n.id === actual.id ? ' activo' : ''), href: '#/' + n.id, title: `${n.t} (Alt+${i + 1})`, 'aria-current': n.id === actual.id ? 'page' : false }, [icono(n.i), h('span', { text: n.t }), insignia(n.id)])
+    ])),
     h('div', { class: 'usuario' }, [
       h('div', { class: 'usuario-n', text: titulo(S.sesion.nombre) }),
       h('div', { class: 'usuario-r', text: ROLES[S.sesion.rol] || S.sesion.rol }),
