@@ -50,7 +50,7 @@ Pide el usuario y la clave de la plataforma. Si algo falla, el programa lo dice 
 ## Paso 4. Revisar en la plataforma
 Entrar a **Control → Documentos**, elegir el mes. Ahí aparecen:
 - Los casos que no cuadran: días pagados distintos de la asistencia, renta imponible distinta entre liquidación e imposiciones, trabajadores sin imposición, sin liquidación o sin contrato.
-- Los documentos leídos, con el botón **Confirmar lectura** una vez revisados contra el papel.
+- Una fila por trabajador con cuatro revisiones (asistencia, liquidación, imposiciones y contrato) y un resultado OK, Revisar o Incompleto.
 
 Cada caso se marca como resuelto con una nota. Todo queda registrado en el Historial.
 
