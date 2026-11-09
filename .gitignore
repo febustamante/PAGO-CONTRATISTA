@@ -25,3 +25,7 @@ historial_pagado.js
 *.log
 Thumbs.db
 .DS_Store
+
+# Escaneos y datos leidos (personales, nunca se suben)
+Escaneos/
+resultado*.json

@@ -228,3 +228,7 @@ export const contrato = (pin, contratista, labor, precio) => {
   mov(u, 'contrato', `${contratista} ${labor} → ${precio == null ? 'sin precio' : '$' + precio}`);
   return pausa({ ok: true });
 };
+
+export const documentosListar = () => pausa({ ok: true, documentos: [], diferencias: [], trabajadores: 0 });
+export const documentoConfirmar = () => pausa({ ok: true });
+export const ticketResolver = () => pausa({ ok: true });
