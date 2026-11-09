@@ -26,7 +26,7 @@ export function chipsGrupo(g) {
   return c;
 }
 
-export function detalleGrupo(g) {
+export function detalleGrupo(g, { boton: conBoton = true } = {}) {
   const caja = h('div', { class: 'detalle' });
   if (g.pagos.length) {
     caja.appendChild(h('p', { class: 'detalle-t', text: 'Ya pagado con factura en este cuartel y labor' }));
@@ -46,7 +46,7 @@ export function detalleGrupo(g) {
     }
     caja.appendChild(h('p', { class: 'detalle-r', text: `Suma de plantas: ${numero(g.sumaCuartel)}${g.totalCuartel != null ? ' de ' + numero(g.totalCuartel) + ' del cuartel.' : '.'} ${g.excede ? 'Supera el total del cuartel.' : 'No supera el total del cuartel.'}` }));
   }
-  if (puede('asignar')) {
+  if (conBoton && puede('asignar')) {
     caja.appendChild(h('div', { class: 'barra', style: 'margin-top:10px' }, [
       boton(g.confirmadas ? 'Cambiar plantas' : 'Asignar plantas', { tono: g.confirmadas ? '' : 'primario', onclick: () => irAAsignarPlantas(g) }),
       h('span', { class: 'sub', text: g.confirmadas ? `Plantas asignadas: ${numero(g.plantas)}` : `Hoy se pagaría con las plantas de Labores: ${numero(g.plantasOrig)}` })

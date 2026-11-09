@@ -38,7 +38,7 @@ El ingreso es con el mismo PIN de las otras apps (`usuarios_sj`). El rol sale de
 | Rol | Quién | Puede |
 |---|---|---|
 | Administrador | `admin` | todo |
-| Jefa de campo | `supervisor` con campo "El Cerrillo" | ver Inicio, Plantas, Asistencia, Alertas e Historial; proponer plantas, repartir y corregir asistencia |
+| Jefa de campo | `supervisor` con campo "El Cerrillo" | solo **Asignar plantas** (por cuartel y contratista), con los casos en rojo (ya pagado antes) a la vista para ir revisando |
 | Solo lectura | `gerencia` y otros supervisores | ver Inicio, Pagos, Asistencia, Alertas, Otros campos, Contratos, Informe e Historial |
 Sin `rol_labores` no hay acceso. Cada acción queda en el Historial con el nombre de quien la hizo.
 

@@ -7,10 +7,10 @@ import { CONFIG } from '../config.js';
 import { monto } from '../core/reglas.js';
 import { PP } from '../data/pp.js';
 import { S, puede, operar, render, marcarPresencia, quienEsta } from '../estado.js';
-import { aviso, boton, tarjeta, tabla, celda, chip, toast, confirmar } from '../ui/componentes.js';
-import { encabezado } from './_comun.js';
+import { aviso, boton, tarjeta, tabla, celda, chip, toast, confirmar, pildora } from '../ui/componentes.js';
+import { encabezado, detalleGrupo } from './_comun.js';
 
-const U = () => (S.ui.hoja = S.ui.hoja || { cl: '', borrador: null, soloCompartidos: false, soloSin: false });
+const U = () => (S.ui.hoja = S.ui.hoja || { cl: '', borrador: null, soloCompartidos: false, soloSin: false, soloRojos: false });
 const PASO = 100;
 
 function listaCL() {
@@ -34,7 +34,9 @@ function estadoCL(x) {
 export function vistaHoja() {
   const u = U();
   const todos = listaCL();
-  const visibles = todos.filter((x) => (!u.soloCompartidos || x.grupos.length >= 2) && (!u.soloSin || estadoCL(x)[0] === 'Sin asignar'));
+  const visibles = todos.filter((x) => (!u.soloCompartidos || x.grupos.length >= 2) && (!u.soloSin || estadoCL(x)[0] === 'Sin asignar') && (!u.soloRojos || x.grupos.some((g) => g.rojo)));
+  const nRojos = todos.filter((x) => x.grupos.some((g) => g.rojo)).length;
+  const nNoPagar = todos.filter((x) => x.grupos.some((g) => g.rojo && g.estado === 'misma')).length;
   const candidatos = todos.filter((x) => x.grupos.length === 1 && !x.grupos[0].asignacion &&
     (x.grupos[0].totalCuartel == null || x.grupos[0].plantasOrig <= x.grupos[0].totalCuartel * CONFIG.TOLERANCIA_EXCESO));
   if (!u.cl || !todos.some((x) => x.k === u.cl)) {
@@ -61,12 +63,14 @@ export function vistaHoja() {
 
   raiz.appendChild(h('div', { class: 'tarjeta' }, [
     h('div', { class: 'tarjeta-cab', style: 'margin-bottom:0' }, [h('b', { text: `${asignados} de ${todos.length} cuarteles con plantas asignadas` }), h('span', { class: 'sub', text: `${todos.length ? Math.round(asignados / todos.length * 100) : 0}%` })]),
-    h('div', { class: 'progreso' }, [h('div', { style: `width:${todos.length ? Math.round(asignados / todos.length * 100) : 0}%` })])
+    h('div', { class: 'progreso' }, [h('div', { style: `width:${todos.length ? Math.round(asignados / todos.length * 100) : 0}%` })]),
+    nRojos ? h('p', { class: 'nota', style: 'margin:8px 0 0' }, [pildora(`${nRojos} en rojo`, 'rojo', 'Cuarteles y labores con un pago anterior con factura'), ` ${nNoPagar} con "no pagar" (misma vuelta). Ábrelos para ver el pago anterior.`]) : null
   ]));
 
   raiz.appendChild(h('div', { class: 'barra' }, [
     h('label', { class: 'check' }, [h('input', { type: 'checkbox', checked: u.soloCompartidos, onchange: (e) => { u.soloCompartidos = e.target.checked; render(); } }), 'Solo cuarteles compartidos (2 o más contratistas)']),
-    h('label', { class: 'check' }, [h('input', { type: 'checkbox', checked: u.soloSin, onchange: (e) => { u.soloSin = e.target.checked; render(); } }), 'Solo los sin asignar'])
+    h('label', { class: 'check' }, [h('input', { type: 'checkbox', checked: u.soloSin, onchange: (e) => { u.soloSin = e.target.checked; render(); } }), 'Solo los sin asignar']),
+    h('label', { class: 'check' }, [h('input', { type: 'checkbox', checked: u.soloRojos, onchange: (e) => { u.soloRojos = e.target.checked; render(); } }), 'Solo los rojos (ya pagado antes)'])
   ]));
 
   const filas = visibles.map((x) => {
@@ -75,7 +79,9 @@ export function vistaHoja() {
     const asignado = x.grupos.reduce((s, g) => s + g.plantas, 0);
     const presentes = quienEsta(x.k);
     return h('tr', { class: 'clic' + (x.k === u.cl ? ' sel' : ''), onclick: () => { u.cl = x.k; u.borrador = null; render(); } }, [
-      celda(x.cuartel, { clase: 'txt-azul' }), celda([oracion(x.labor), presentes.length ? h('span', { class: 'presencia', style: 'margin-left:8px', text: titulo(presentes[0]) + ' está aquí' }) : null], { clase: 'sin-corte' }),
+      celda(x.cuartel, { clase: x.grupos.some((g) => g.rojo) ? 'txt-rojo' : 'txt-azul' }), celda([oracion(x.labor),
+        x.grupos.some((g) => g.rojo && g.estado === 'misma') ? pildora('No pagar', 'rojo', 'Misma vuelta: ya hay un pago con factura hace 7 días o menos') : x.grupos.some((g) => g.rojo) ? pildora('Pago anterior', 'ambar', 'Hay un pago anterior con factura (vuelta nueva)') : null,
+        presentes.length ? h('span', { class: 'presencia', style: 'margin-left:8px', text: titulo(presentes[0]) + ' está aquí' }) : null], { clase: 'sin-corte' }),
       celda(x.grupos.map((g) => titulo(g.contratista)).join(', ')),
       celda(T != null ? numero(T) : 's/d', { num: true }), celda(numero(asignado), { num: true }), celda(chip(t, tono), { clase: 'sin-corte' })
     ]);
@@ -177,6 +183,10 @@ function editor(x) {
       chip(gs.length + (gs.length === 1 ? ' contratista' : ' contratistas'), gs.length > 1 ? 'azul' : 'gris'),
       presentes.length ? h('span', { class: 'presencia', text: titulo(presentes.join(', ')) + (presentes.length > 1 ? ' están aquí' : ' está aquí') }) : null
     ]),
+    gs.some((g) => g.rojo) ? h('div', { style: 'margin-bottom:12px' }, [
+      aviso('warn', 'Este cuartel y labor ya tiene un pago anterior con factura. Revisa los datos antes de asignar plantas.'),
+      ...gs.filter((g) => g.rojo).map((g) => h('div', { class: 'tarjeta', style: 'margin:8px 0' }, [h('b', { text: titulo(g.contratista) }), detalleGrupo(g, { boton: false })]))
+    ]) : null,
     h('div', { class: 'tabla-caja' }, [h('table', { class: 'tabla editor' }, [
       h('thead', {}, [h('tr', {}, ['Contratista', 'Precio', 'Plantas en Labores', 'Asignación', 'Plantas nuevas', 'Monto'].map((t, i) => h('th', { class: i === 0 || i === 3 ? '' : 'num', text: t })))]),
       h('tbody', {}, filas)

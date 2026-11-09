@@ -20,16 +20,16 @@ import { vistaImpresion } from './vistas/impresion.js';
 
 const TODOS = ['admin', 'jefa_campo', 'lectura'];
 const NAV = [
-  { id: 'inicio', t: 'Inicio', i: 'inicio', roles: TODOS, v: () => vistaTablero(ir) },
+  { id: 'inicio', t: 'Inicio', i: 'inicio', roles: ['admin', 'lectura'], v: () => vistaTablero(ir) },
   { id: 'pagos', t: 'Pagos', i: 'dinero', roles: ['admin', 'lectura'], v: vistaPagos },
-  { id: 'plantas', t: 'Plantas', i: 'reparto', roles: ['admin', 'jefa_campo'], v: vistaPlantas },
-  { id: 'asistencia', t: 'Asistencia', i: 'personas', roles: TODOS, v: vistaAsistencia },
-  { id: 'alertas', t: 'Alertas', i: 'alerta', roles: TODOS, v: vistaAlertas },
+  { id: 'plantas', t: 'Asignar plantas', i: 'reparto', roles: ['admin', 'jefa_campo'], v: vistaPlantas },
+  { id: 'asistencia', t: 'Asistencia', i: 'personas', roles: ['admin', 'lectura'], v: vistaAsistencia },
+  { id: 'alertas', t: 'Alertas', i: 'alerta', roles: ['admin', 'lectura'], v: vistaAlertas },
   { id: 'otros', t: 'Otros campos', i: 'mapa', roles: ['admin', 'lectura'], v: vistaOtros },
   { id: 'contratos', t: 'Contratos', i: 'contrato', roles: ['admin', 'lectura'], v: vistaContratos },
   { id: 'informe', t: 'Informe', i: 'hoja', roles: ['admin', 'lectura'], v: vistaInforme },
   { id: 'impresion', t: 'Impresión', i: 'imprimir', roles: ['admin'], v: vistaImpresion },
-  { id: 'historial', t: 'Historial', i: 'reloj', roles: TODOS, v: vistaHistorial }
+  { id: 'historial', t: 'Historial', i: 'reloj', roles: ['admin', 'lectura'], v: vistaHistorial }
 ];
 
 // Nombres cortos y rutas antiguas: llevan a la pantalla nueva con la pestaña correcta.
