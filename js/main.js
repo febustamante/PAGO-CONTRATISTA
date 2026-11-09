@@ -20,6 +20,7 @@ import { vistaImpresion } from './vistas/impresion.js';
 import { vistaUsuarios } from './vistas/usuarios.js';
 import { vistaClave } from './vistas/clave.js';
 import { vistaDocumentos } from './vistas/documentos.js';
+import { vistaRetencion } from './vistas/retencion.js';
 import { vistaAjustes } from './vistas/ajustes.js';
 import { vistaLiquidacion } from './vistas/liquidacion.js';
 
@@ -36,6 +37,7 @@ const NAV = [
   { id: 'documentos', g: 'Control', t: 'Documentos', i: 'contrato', roles: ['admin'], v: vistaDocumentos },
   { id: 'informe', g: 'Control', t: 'Informe', i: 'hoja', roles: ['admin', 'lectura'], v: vistaInforme },
   { id: 'ajustes', g: 'Administración', t: 'Ajustes', i: 'contrato', roles: ['admin'], v: vistaAjustes },
+  { id: 'retencion', t: 'Detalle a liberar', i: 'hoja', roles: ['admin'], oculto: true, v: vistaRetencion },
   { id: 'liquidacion', t: 'Detalle a facturar', i: 'hoja', roles: ['admin', 'lectura'], oculto: true, v: vistaLiquidacion },
   { id: 'usuarios', g: 'Administración', t: 'Usuarios', i: 'personas', roles: ['admin'], v: vistaUsuarios },
   { id: 'historial', g: 'Administración', t: 'Historial', i: 'reloj', roles: ['admin', 'lectura'], v: vistaHistorial },

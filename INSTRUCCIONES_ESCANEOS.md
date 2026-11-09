@@ -23,6 +23,7 @@ Claude debe producir una lista JSON. Cada documento tiene esta forma:
   "tipo": "liquidacion",
   "rut": "12345678-9",
   "nombre": "NOMBRE DEL TRABAJADOR",
+  "contratista": "NOMBRE DEL CONTRATISTA",
   "periodo": "2026-10",
   "archivo": "liquidaciones.pdf página 3",
   "datos": { "dias_trabajados": 22, "renta_imponible": 520000, "sueldo_liquido": 450000 }
@@ -32,6 +33,7 @@ Claude debe producir una lista JSON. Cada documento tiene esta forma:
 Reglas para Claude:
 - `tipo`: `liquidacion`, `imposicion` o `contrato`.
 - `rut`: sin puntos y con guion (`12345678-9`). Si no se lee con seguridad, no inventarlo: dejar el documento fuera y avisar.
+- `contratista`: el nombre de la carpeta del contratista en mayúsculas, igual a como aparece en Pagos (por ejemplo `ROBINSON ZURITA`). Es obligatorio, porque con él se libera la retención.
 - `periodo`: mes de la remuneración, `AAAA-MM`.
 - `datos` para **liquidacion**: `dias_trabajados`, `renta_imponible`, `sueldo_liquido`, `descuentos_previsionales` (si aparecen).
 - `datos` para **imposicion**: `renta_imponible`, `afp`, `salud`, `cesantia`.
@@ -51,3 +53,5 @@ Entrar a **Control → Documentos**, elegir el mes. Ahí aparecen:
 - Los documentos leídos, con el botón **Confirmar lectura** una vez revisados contra el papel.
 
 Cada caso se marca como resuelto con una nota. Todo queda registrado en el Historial.
+
+En la pestaña **Liberar retención** se ve, por contratista, lo retenido, lo ya liberado y si sus documentos están en orden. Con todo en OK se libera la retención; si quedan casos abiertos solo se puede liberar con una excepción y una nota. Cada contratista tiene un **Detalle a liberar** imprimible.

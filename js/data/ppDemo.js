@@ -232,3 +232,13 @@ export const contrato = (pin, contratista, labor, precio) => {
 export const documentosListar = () => pausa({ ok: true, documentos: [], diferencias: [], trabajadores: 0 });
 export const documentoConfirmar = () => pausa({ ok: true });
 export const ticketResolver = () => pausa({ ok: true });
+const P = (rut, nombre, c, dias, dl, hl, hi, hc, casos) => ({ rut, nombre, contratista: c, dias_asistencia: dias, dias_liq: dl, hay_liq: hl, hay_imp: hi, hay_contrato: hc, casos });
+export const retencionesResumen = () => pausa({ ok: true,
+  contratistas: [{ contratista: 'CONTRATISTA A', retenido: 323204, liberado: 0, liberado_periodo: 0 }, { contratista: 'CONTRATISTA B', retenido: 180000, liberado: 0, liberado_periodo: 0 }],
+  personas: [
+    P('11111111-1', 'TRABAJADOR UNO', 'CONTRATISTA A', 22, 22, true, true, true, []),
+    P('22222222-2', 'TRABAJADOR DOS', 'CONTRATISTA A', 19, 22, true, true, true, [{ clase: 'dias', detalle: 'La liquidación paga 22 días y la asistencia registra 19.', estado: 'abierto' }]),
+    P('33333333-3', 'TRABAJADOR TRES', 'CONTRATISTA B', 20, 20, true, true, true, []),
+    P('44444444-4', 'TRABAJADOR CUATRO', 'CONTRATISTA B', 21, 21, true, true, false, [{ clase: 'sin_contrato', detalle: 'No hay contrato cargado para este trabajador.', estado: 'abierto' }])
+  ], historial: [] });
+export const retencionLiberar = () => pausa({ ok: false, error: 'No disponible en la demostración.' });
