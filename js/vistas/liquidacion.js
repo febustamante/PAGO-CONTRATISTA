@@ -26,6 +26,7 @@ export function vistaLiquidacion() {
       boton('Volver', { onclick: () => { location.hash = '#/pagos'; } }),
       boton('Imprimir o guardar PDF', { tono: 'primario', icon: 'imprimir', onclick: () => window.print() })
     ]),
+    h('img', { src: 'img/logo.jpg', alt: 'Agrícola San José', style: 'width:220px;display:block;margin-bottom:10px' }),
     h('h1', { text: 'Detalle a facturar' }),
     h('p', {}, [h('b', { text: razon || titulo(l.contratista) }), razon ? ` (${titulo(l.contratista)})` : '']),
     h('p', { text: `Concepto: ${l.tipo === 'inversion' ? 'Inversión (cuarteles en formación)' : 'Servicios'} · Fecha de factura: ${fecha(l.fecha_factura)}${l.n_factura ? ' · N° ' + l.n_factura : ''}` }),
