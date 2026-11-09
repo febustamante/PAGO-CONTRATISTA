@@ -183,3 +183,21 @@ input:disabled { background: var(--gris-bg); color: var(--texto-3); }
   .barra-fija { bottom: 8px; }
   .g-fila { grid-template-columns: 96px 1fr 70px; }
 }
+
+/* Detalle a facturar (hoja para el contratista) */
+.hoja-liq { max-width: 794px; margin: 0 auto; background: #fff; color: #1f1c19; padding: 28px 40px; font-size: 12px; }
+.hoja-liq .liq-cab { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; }
+.hoja-liq .liq-cab img { width: 170px; }
+.hoja-liq .liq-der { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; color: #6b6862; }
+.hoja-liq .liq-der b { color: #1f1c19; font-size: 11px; }
+.hoja-liq .liq-top { display: grid; grid-template-columns: 1fr 1.3fr; gap: 20px; border-bottom: 1px solid #1f1c19; padding-bottom: 10px; margin-bottom: 8px; }
+.hoja-liq small { display: block; font-size: 9.5px; color: #6b6862; letter-spacing: .04em; margin-top: 4px; }
+.hoja-liq .liq-total { font-size: 26px; font-weight: 700; line-height: 1.2; }
+.hoja-liq table { width: 100%; border-collapse: collapse; }
+.hoja-liq .liq-tabla th { font-size: 9.5px; font-weight: 600; color: #6b6862; text-align: left; padding: 4px 6px; border-bottom: 1px solid #1f1c19; text-transform: uppercase; }
+.hoja-liq .liq-tabla td { padding: 3px 6px; border-bottom: 1px solid #e4e0d8; font-size: 11.5px; }
+.hoja-liq .num { text-align: right; font-variant-numeric: tabular-nums; }
+.hoja-liq .liq-resumen { width: 52%; margin: 14px 0 0 auto; }
+.hoja-liq .liq-resumen td { padding: 4px 0; }
+.hoja-liq .liq-resumen tr.fuerte td { font-weight: 700; border-top: 1px solid #1f1c19; }
+.hoja-liq .liq-resumen tr.final td { font-weight: 700; font-size: 14px; border-top: 2px solid #1f1c19; border-bottom: 2px solid #1f1c19; padding: 6px 0; }

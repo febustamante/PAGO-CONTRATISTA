@@ -19,3 +19,5 @@
   .hoja-impresa td.casilla { width: 120px; border: 1px solid #000; }
   .hoja-impresa .firma { margin-top: 28px; }
 }
+
+@media print { .hoja-liq { padding: 0; max-width: none; } .no-imprimir { display: none !important; } .contenido { padding: 0 !important; } .hoja-liq tr { break-inside: avoid; } }
