@@ -2,7 +2,7 @@
 // Monto = plantas × precio × 1,5. Último paso: la fecha de pago se pone de una vez a todo lo liberado.
 
 import { h } from '../core/dom.js';
-import { dinero, numero, fecha, unicos, csv, descargar, titulo, oracion } from '../core/dom.js';
+import { dinero, numero, fecha, unicos, csv, descargar, descargarExcel, titulo, oracion } from '../core/dom.js';
 import { CONFIG } from '../config.js';
 import { PP } from '../data/pp.js';
 import { S, puede, operar, render } from '../estado.js';
@@ -149,10 +149,29 @@ function panelLiquidacion(contratista, tipo, lista) {
   ], { acciones: [chip(dinero(bruto), 'verde')] });
 }
 
+// Una fila por labor liberada (hasta precio unitario); los totales de la liquidación van solo en la primera fila de cada una.
+async function excelLiquidaciones(lista) {
+  const cab = ['Contratista', 'Razón social', 'Concepto', 'Cuartel', 'Labor', 'Plantas', 'Precio unit.', 'Precio unit. +50%', 'Monto',
+    'Total bruto', 'Colaciones 50%', 'Colaciones 100%', 'Precio colación', 'Descuento colaciones', 'Otros descuentos', 'Total neto', 'IVA', 'Total factura', 'Fecha factura', 'N° factura', 'Retención %', 'Retención', 'A pago'];
+  const filas = [cab];
+  for (const l of [...lista].sort((a, b) => String(a.fecha_factura).localeCompare(String(b.fecha_factura)))) {
+    const libs = S.pp.liberaciones.filter((x) => x.liquidacion_id === l.id);
+    const razon = (S.pp.config || {})['razon:' + l.contratista] || '';
+    libs.forEach((x, i) => {
+      const d = i === 0;
+      filas.push([titulo(l.contratista), razon, l.tipo === 'inversion' ? 'Inversión' : 'Servicios', x.cuartel, oracion(x.labor), Number(x.plantas), Number(x.valor), Number(x.valor) * CONFIG.FACTOR_CONTRATISTA, Math.round(x.monto),
+        d ? l.bruto : '', d ? l.colaciones_50 : '', d ? l.colaciones_100 : '', d ? l.precio_colacion : '', d ? l.descuento_colaciones : '', d ? l.otros_descuentos : '', d ? l.neto : '', d ? l.iva : '', d ? l.total_factura : '',
+        d ? l.fecha_factura : '', d ? (l.n_factura || '') : '', d ? l.retencion_pct : '', d ? l.retencion : '', d ? l.a_pago : '']);
+    });
+  }
+  try { await descargarExcel('liquidaciones.xlsx', [{ nombre: 'Liquidaciones', filas }]); } catch (e) { toast(e.message, 'err'); }
+}
+
 function contenidoLiquidaciones() {
   const lista = S.pp.liquidaciones || [];
   const raiz = h('div');
   if (!lista.length) { raiz.appendChild(tarjeta(null, h('p', { class: 'vacio', text: 'Aún no hay liquidaciones. Se crean en la pestaña Liberados.' }))); return raiz; }
+  raiz.appendChild(h('div', { class: 'barra' }, [boton('Descargar Excel', { icon: 'descargar', onclick: () => excelLiquidaciones(lista) })]));
   const porC = new Map();
   for (const l of lista) porC.set(l.contratista, (porC.get(l.contratista) || 0) + Number(l.retencion));
   raiz.appendChild(tarjeta('Retenido por contratista', tabla([{ t: 'Contratista' }, { t: 'Retención acumulada', num: true }],
