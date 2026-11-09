@@ -19,6 +19,8 @@ import { vistaHistorial } from './vistas/historial.js';
 import { vistaImpresion } from './vistas/impresion.js';
 import { vistaUsuarios } from './vistas/usuarios.js';
 import { vistaClave } from './vistas/clave.js';
+import { vistaAjustes } from './vistas/ajustes.js';
+import { vistaLiquidacion } from './vistas/liquidacion.js';
 
 const TODOS = ['admin', 'jefa_campo', 'lectura'];
 const NAV = [
@@ -31,6 +33,8 @@ const NAV = [
   { id: 'contratos', t: 'Contratos', i: 'contrato', roles: ['admin', 'lectura'], v: vistaContratos },
   { id: 'informe', t: 'Informe', i: 'hoja', roles: ['admin', 'lectura'], v: vistaInforme },
   { id: 'impresion', t: 'Impresión', i: 'imprimir', roles: ['admin'], v: vistaImpresion },
+  { id: 'ajustes', t: 'Ajustes', i: 'contrato', roles: ['admin'], v: vistaAjustes },
+  { id: 'liquidacion', t: 'Detalle a facturar', i: 'hoja', roles: ['admin', 'lectura'], oculto: true, v: vistaLiquidacion },
   { id: 'usuarios', t: 'Usuarios', i: 'personas', roles: ['admin'], v: vistaUsuarios },
   { id: 'historial', t: 'Historial', i: 'reloj', roles: ['admin', 'lectura'], v: vistaHistorial },
   { id: 'clave', t: 'Mi clave', i: 'candado', roles: TODOS, oculto: true, v: () => vistaClave() }

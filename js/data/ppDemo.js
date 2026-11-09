@@ -19,6 +19,54 @@ const kg = (x) => [x.cuartel, x.labor, x.contratista, Number(x.valor)].join('|')
 window.__ppDemo = window.__ppDemo || { presenciaSimulada: null };
 export const presencia = () => pausa({ ok: true, presencia: window.__ppDemo.presenciaSimulada || [] });
 
+D.config = { precio_colacion: '4100', iva_pct: '19', retencion_pct: '20', retencion_base: 'total', 'razon:ROBINSON ZURITA': 'SOCIEDAD ATIRUZ LTDA.', 'razon:JAVIER ESCUDERO': 'AGRICOLA PAMELA PEÑA', 'razon:DANIEL MORALEDA': 'DANIEL MORALEDA', 'razon:WILFREDO SPA': 'CONTRATISTA P.R.W. SPA' };
+D.inversion = ['C24', 'C25', 'C26', 'C27', 'C28', 'C29'];
+D.liquidaciones = [];
+export const configGuardar = (pin, clave, valor) => {
+  const u = quien(pin);
+  if (!u || u.rol !== 'admin') return pausa(err('Solo el administrador cambia los ajustes.'));
+  if (['precio_colacion', 'iva_pct', 'retencion_pct'].includes(clave) && !(Number(valor) >= 0)) return pausa(err('El valor debe ser un número.'));
+  D.config[clave] = String(valor);
+  mov(u, 'ajuste', `${clave} → ${valor}`);
+  return pausa({ ok: true });
+};
+export const inversionGuardar = (pin, cuarteles) => {
+  const u = quien(pin);
+  if (!u || u.rol !== 'admin') return pausa(err('Solo el administrador cambia los ajustes.'));
+  D.inversion = [...cuarteles].sort();
+  mov(u, 'ajuste', `cuarteles en inversión: ${D.inversion.join(', ') || 'ninguno'}`);
+  return pausa({ ok: true });
+};
+export const liquidar = (pin, contratista, tipo, ids, col50, col100, otros, fecha, factura) => {
+  const u = quien(pin);
+  if (!u || u.rol !== 'admin') return pausa(err('Solo el administrador genera liquidaciones.'));
+  if (!fecha) return pausa(err('Falta la fecha de factura.'));
+  const libs = D.liberaciones.filter((l) => ids.includes(l.id) && !l.anulada && l.contratista === contratista && !l.liquidacion_id);
+  if (libs.length !== ids.length) return pausa(err('Alguna liberación ya está en una liquidación, fue anulada o es de otro contratista. Actualiza la pantalla.'));
+  if (libs.some((l) => D.inversion.includes(l.cuartel) !== (tipo === 'inversion'))) return pausa(err('Hay liberaciones que no corresponden a ' + (tipo === 'inversion' ? 'inversión' : 'servicios') + '.'));
+  const precio = Number(D.config.precio_colacion); const ivaPct = Number(D.config.iva_pct); const retPct = Number(D.config.retencion_pct); const base = D.config.retencion_base;
+  const bruto = Math.round(libs.reduce((s, l) => s + Number(l.monto), 0));
+  const desc = Math.round((col50 || 0) * precio / 2 + (col100 || 0) * precio);
+  const neto = Math.round(bruto - desc - (otros || 0));
+  if (neto < 0) return pausa(err('Los descuentos superan el monto liberado.'));
+  const iva = Math.round(neto * ivaPct / 100); const total = neto + iva;
+  const baseRet = base === 'neto' ? neto : total; const ret = Math.round(baseRet * retPct / 100);
+  const id = D.liquidaciones.length + 1;
+  D.liquidaciones.unshift({ id, contratista, tipo, bruto, colaciones_50: col50 || 0, colaciones_100: col100 || 0, precio_colacion: precio, descuento_colaciones: desc, otros_descuentos: otros || 0, neto, iva_pct: ivaPct, iva, total_factura: total, retencion_pct: retPct, retencion_base: base, retencion: ret, a_pago: baseRet - ret, fecha_factura: fecha, n_factura: factura || null, creado_por: u.nombre, creado_en: ahora(), anulada: false });
+  libs.forEach((l) => { l.liquidacion_id = id; });
+  mov(u, 'liquidacion', `${contratista} · ${tipo} · total factura $${total}`);
+  return pausa({ ok: true, id, neto, iva, total_factura: total, retencion: ret, a_pago: baseRet - ret });
+};
+export const liquidacionAnular = (pin, id) => {
+  const u = quien(pin);
+  if (!u || u.rol !== 'admin') return pausa(err('Solo el administrador anula liquidaciones.'));
+  const l = D.liquidaciones.find((x) => x.id === id && !x.anulada);
+  if (!l) return pausa(err('La liquidación no existe o ya estaba anulada.'));
+  l.anulada = true; D.liberaciones.forEach((x) => { if (x.liquidacion_id === id) x.liquidacion_id = null; });
+  mov(u, 'anular_liquidacion', `${l.contratista} · ${l.tipo}`);
+  return pausa({ ok: true });
+};
+
 D.impresion = { ultimo_folio: 8113, iniciado: true, reintentar: [], actualizado_por: 'Inicio automático', actualizado_en: new Date().toISOString(), historial: [] };
 export const impresionLeer = (pin) => {
   const u = quien(pin);
@@ -70,7 +118,7 @@ export const usuarioGuardar = (token, usuario, nombre, rol, clave, activo) => {
 export const estado = (pin) => {
   const u = quien(pin);
   if (!u) return pausa(err('No autorizado.'));
-  return pausa({ ok: true, usuario: u, asignaciones: D.asignaciones, reparto: D.reparto, liberaciones: D.liberaciones.filter((l) => !l.anulada), asistencia: D.asistencia, contratos: D.contratos, movimientos: D.movimientos.slice(0, 200), ahora: ahora() });
+  return pausa({ ok: true, usuario: u, asignaciones: D.asignaciones, reparto: D.reparto, liberaciones: D.liberaciones.filter((l) => !l.anulada), asistencia: D.asistencia, contratos: D.contratos, movimientos: D.movimientos.slice(0, 200), config: D.config, inversion: D.inversion, liquidaciones: D.liquidaciones.filter((l) => !l.anulada), ahora: ahora() });
 };
 
 export const proponer = (pin, items) => {

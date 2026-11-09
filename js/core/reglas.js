@@ -8,6 +8,21 @@ export const claveLiberacion = (g) => [g.cuartel, g.labor, g.contratista, g.valo
 export const esCuartelCerrillo = (c) => /^C\d\d$/.test(c || '');
 export const monto = (plantas, valor) => (plantas || 0) * (valor || 0) * CONFIG.FACTOR_CONTRATISTA;
 
+// Liquidación a facturar por un contratista: colaciones, IVA y retención. Es el mismo cálculo que hace el servidor.
+export function calcularLiquidacion({ bruto, col50, col100, otros, cfg }) {
+  const precio = Number(cfg.precio_colacion != null ? cfg.precio_colacion : 4100);
+  const ivaPct = Number(cfg.iva_pct != null ? cfg.iva_pct : 19);
+  const retPct = Number(cfg.retencion_pct != null ? cfg.retencion_pct : 20);
+  const base = cfg.retencion_base === 'neto' ? 'neto' : 'total';
+  const descuento = Math.round((col50 || 0) * precio / 2 + (col100 || 0) * precio);
+  const neto = Math.round((bruto || 0) - descuento - (otros || 0));
+  const iva = Math.round(neto * ivaPct / 100);
+  const total = neto + iva;
+  const baseRet = base === 'neto' ? neto : total;
+  const retencion = Math.round(baseRet * retPct / 100);
+  return { precio, ivaPct, retPct, base, descuento, neto, iva, total, retencion, aPago: baseRet - retencion };
+}
+
 export function diasEntre(a, b) {
   return Math.round((Date.parse(a) - Date.parse(b)) / 86400000);
 }

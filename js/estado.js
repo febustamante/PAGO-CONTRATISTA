@@ -114,7 +114,7 @@ export async function sincronizar({ forzar = false, soloPresencia = false } = {}
     S.presencia = nuevaPresencia;
     if (!pp) { if (cambioPresencia) render(); return; }
     if (!pp.ok) return;
-    const huella = JSON.stringify([pp.asignaciones, pp.reparto, pp.liberaciones, pp.asistencia, pp.contratos, (pp.movimientos[0] || {}).id]);
+    const huella = JSON.stringify([pp.asignaciones, pp.reparto, pp.liberaciones, pp.asistencia, pp.contratos, pp.config, pp.inversion, pp.liquidaciones, (pp.movimientos[0] || {}).id]);
     if (!forzar && huella === ultimaHuella && !cambioPresencia) return;
     const antes = S.pp ? propuestas(S.pp) : 0;
     ultimaHuella = huella;
