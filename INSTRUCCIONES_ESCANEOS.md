@@ -9,6 +9,17 @@ Claude lee los PDF, guarda lo leído en un archivo y un programa lo sube a la pl
 - Los escaneos se quedan en tu computador. A la plataforma solo se suben los datos leídos, nunca el archivo.
 - **No pegues claves ni datos personales en el repositorio de GitHub.** Los escaneos y los JSON no se suben (están excluidos).
 
+## Atajo: PDF digitales (sin Claude, gratis)
+Si las liquidaciones vienen del programa de remuneraciones y las imposiciones son el comprobante de Previred, esos PDF tienen texto seleccionable. Entonces no hace falta que Claude los lea: el programa `leer_pdfs.py` los lee directamente, sin errores de lectura y sin costo.
+
+```
+pip install pymupdf
+python leer_pdfs.py --contratista "ROBINSON ZURITA" --liquidaciones "Liq2026-10.pdf" --imposiciones "IMPOSICIONES OCTUBRE 2026.pdf" --salida resultado.json
+python cargar_escaneos.py resultado.json
+```
+- Las liquidaciones y las imposiciones deben ser **del mismo mes**. El programa muestra el mes que detectó en cada archivo; revísalo antes de subir.
+- Los contratos y el papel escaneado siguen leyéndose con Claude (pasos siguientes).
+
 ## Paso 1. Dejar los escaneos en una carpeta
 Un PDF por tipo y mes, por ejemplo `Escaneos/2026-10/liquidaciones.pdf`, `imposiciones.pdf`, `contratos.pdf`.
 Escanear derecho, sin sombras, a 200–300 ppp.
