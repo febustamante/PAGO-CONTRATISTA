@@ -50,21 +50,32 @@ export function vistaDocumentos() {
 
 function vistaPersonas(r, u) {
   const raiz = h('div');
-  if (!r.personas.length) { raiz.appendChild(tarjeta(null, h('p', { class: 'vacio', text: 'No hay documentos cargados para este mes. Se cargan con cargar_escaneos.py (ver INSTRUCCIONES_ESCANEOS.md).' }))); return raiz; }
-  const calc = r.personas.map((p) => ({ p, v: revisiones(p) }));
-  const ok = calc.filter((x) => x.v.res[0] === 'ok').length, dif = calc.filter((x) => x.v.res[0] === 'dif').length, falta = calc.filter((x) => x.v.res[0] === 'falta').length;
-  raiz.appendChild(h('div', { class: 'kpis' }, [kpi(calc.length, 'Trabajadores'), kpi(ok, 'Todo en orden', { tono: 'verde' }), kpi(dif, 'Con diferencias', { tono: dif ? 'rojo' : 'verde' }), kpi(falta, 'Faltan documentos', { tono: falta ? 'ambar' : 'verde' })]));
+  if (!r.personas.length) { raiz.appendChild(tarjeta(null, h('p', { class: 'vacio', text: 'No hay documentos cargados para este mes. Se cargan con leer_pdfs.py y cargar_escaneos.py (ver INSTRUCCIONES_ESCANEOS.md).' }))); return raiz; }
   const contratistas = [...new Set(r.personas.map((p) => p.contratista).filter(Boolean))].sort();
-  raiz.appendChild(h('div', { class: 'barra' }, [
-    campo('Mostrar', seleccion([['todos', 'Todos'], ['dif', 'Con diferencias'], ['falta', 'Faltan documentos'], ['abiertos', 'Con casos abiertos']], u.filtro, (v) => { u.filtro = v; render(); })),
-    campo('Contratista', seleccion([['', 'Todos'], ...contratistas.map((c) => [c, titulo(c)])], u.contratista, (v) => { u.contratista = v; render(); }))
+  const base = r.personas.filter((p) => !u.contratista || p.contratista === u.contratista);
+  const conDif = (p) => p.casos.some((c) => c.estado === 'abierto' && (c.clase === 'dias' || c.clase === 'imponible'));
+  const lista = base.filter((p) => u.filtro !== 'dif' || conDif(p));
+  const cuenta = (f) => base.filter(f).length;
+  raiz.appendChild(h('div', { class: 'kpis' }, [
+    kpi(base.length, 'Trabajadores'), kpi(cuenta((p) => p.hay_liq), 'Con liquidación'), kpi(cuenta((p) => p.hay_imp), 'Con imposiciones'), kpi(cuenta((p) => p.hay_contrato), 'Con contrato')
   ]));
-  const lista = calc.filter(({ p, v }) => (!u.contratista || p.contratista === u.contratista) && (u.filtro === 'todos' || (u.filtro === 'dif' && v.res[0] === 'dif') || (u.filtro === 'falta' && v.res[0] === 'falta') || (u.filtro === 'abiertos' && v.abiertos.length)));
+  raiz.appendChild(h('div', { class: 'barra' }, [
+    campo('Contratista', seleccion([['', 'Todos'], ...contratistas.map((c) => [c, titulo(c)])], u.contratista, (v) => { u.contratista = v; render(); })),
+    campo('Mostrar', seleccion([['todos', 'Todos'], ['dif', 'Solo con diferencias']], u.filtro === 'dif' ? 'dif' : 'todos', (v) => { u.filtro = v; render(); }))
+  ]));
+  const abierto = (p, clase) => p.casos.some((c) => c.clase === clase && c.estado === 'abierto');
+  const rojo = (t) => h('span', { style: 'color:var(--rojo);font-weight:600', text: t });
+  const n = (x) => (x == null ? '—' : String(x).replace('.', ','));
+  const $ = (x) => (x == null ? '—' : dinero(x));
   const filas = [];
-  for (const { p, v } of lista) {
+  for (const p of lista) {
     filas.push(h('tr', { class: 'clic', onclick: () => { u.abierta = u.abierta === p.rut ? null : p.rut; render(); } }, [
       celda([h('div', { class: 'n', text: titulo(p.nombre || '—') }), h('div', { class: 'm', text: p.rut + (p.contratista ? ' · ' + titulo(p.contratista) : '') })]),
-      celda(chip(p.dias_asistencia + ' días', p.dias_asistencia ? 'verde' : 'ambar')), celda(pill(v.liq)), celda(pill(v.imp)), celda(pill(v.con)), celda(pill(v.res))
+      celda(String(p.dias_asistencia), { num: true }),
+      celda(p.hay_liq ? (abierto(p, 'dias') ? rojo(n(p.dias_liq)) : n(p.dias_liq)) : rojo('—'), { num: true }),
+      celda(p.hay_imp ? (abierto(p, 'imponible') ? rojo($(p.renta_imp)) : $(p.renta_imp)) : rojo('—'), { num: true }),
+      celda(p.hay_liq ? (abierto(p, 'imponible') ? rojo($(p.renta_liq)) : $(p.renta_liq)) : rojo('—'), { num: true }),
+      celda(p.hay_contrato ? h('b', { style: 'color:var(--verde)', text: 'Sí' }) : rojo('No'), { num: true })
     ]));
     if (u.abierta === p.rut) {
       filas.push(h('tr', { class: 'fila-detalle' }, [h('td', { colspan: 6 }, p.casos.length ? p.casos.map((c) => h('div', { class: 'barra' }, [
@@ -77,7 +88,10 @@ function vistaPersonas(r, u) {
         } })])) : [h('span', { text: 'Todo cuadra para este trabajador.' })])]));
     }
   }
-  raiz.appendChild(tarjeta(null, lista.length ? tabla([{ t: 'Trabajador' }, { t: 'Asistencia' }, { t: 'Liquidación' }, { t: 'Imposiciones' }, { t: 'Contrato' }, { t: 'Resultado' }], filas) : h('p', { class: 'vacio', text: 'No hay trabajadores con ese filtro.' })));
+  const suma = (f) => lista.reduce((s, p) => s + (Number(f(p)) || 0), 0);
+  filas.push(h('tr', { class: 'total' }, [celda(`Total (${lista.length} trabajadores)`), celda(String(suma((p) => p.dias_asistencia)).replace('.', ','), { num: true }), celda(String(suma((p) => p.dias_liq)).replace('.', ','), { num: true }),
+    celda(dinero(suma((p) => p.renta_imp)), { num: true }), celda(dinero(suma((p) => p.renta_liq)), { num: true }), celda(`${lista.filter((p) => p.hay_contrato).length} de ${lista.length}`, { num: true })]));
+  raiz.appendChild(tarjeta(null, lista.length ? tabla([{ t: 'Trabajador' }, { t: 'Asistencia (días)', num: true }, { t: 'Liquidación (días)', num: true }, { t: 'Imposiciones (renta)', num: true }, { t: 'Liquidación (renta)', num: true }, { t: 'Contrato', num: true }], filas) : h('p', { class: 'vacio', text: 'No hay trabajadores con ese filtro.' })));
   return raiz;
 }
 
