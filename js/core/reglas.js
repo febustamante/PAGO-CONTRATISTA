@@ -5,7 +5,7 @@ import { CONFIG } from '../config.js';
 export const laborBase = (l) => (l || '').replace(/\s+2$/, '');
 export const claveGrupo = (g) => [g.cuartel, g.labor, g.contratista, g.valor].join('|');
 export const claveLiberacion = (g) => [g.cuartel, g.labor, g.contratista, g.valor, g.ini || ''].join('|');
-export const esCuartelCerrillo = (c) => /^C\d\d$/.test(c || '');
+export const esCuartelCerrillo = (c) => /^C\d\d$/.test(c || '') || (c || '') === 'EL CERRILLO'; // EL CERRILLO = trabajos generales por jornada
 export const monto = (plantas, valor) => (plantas || 0) * (valor || 0) * CONFIG.FACTOR_CONTRATISTA;
 
 // Liquidación a facturar por un contratista: colaciones, IVA y retención. Es el mismo cálculo que hace el servidor.

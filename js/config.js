@@ -11,7 +11,7 @@ export const CONFIG = {
   // Modo demostración (?demo=1): lee los datos reales pero guarda todo en memoria, sin escribir en Supabase.
   DEMO: parametros.get('demo') === '1',
 
-  EXTERNOS: ['ROBINSON ZURITA', 'JAVIER ESCUDERO', 'DANIEL MORALEDA', 'WILFREDO SPA'],
+  EXTERNOS: ['ROBINSON ZURITA', 'JAVIER ESCUDERO', 'DANIEL MORALEDA', 'WILFREDO SPA', 'SERV LARA SPA'],
   UMBRAL_PRECIO: 5000,          // desde este valor es jornada o tarifa fija, no precio por planta
   DIAS_MISMA_VUELTA: 7,         // 7 días o menos entre pagos = misma vuelta (no pagar)
   FACTOR_CONTRATISTA: 1.5,      // monto = plantas × precio × 1,5 (verificado contra folios_labores.costo)
